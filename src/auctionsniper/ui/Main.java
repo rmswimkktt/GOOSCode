@@ -15,7 +15,10 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
-public class Main {
+import auctionsniper.AuctionEventListener;
+import auctionsniper.AuctionMessageTranslator;
+
+public class Main implements AuctionEventListener{
 	public static final String MAIN_WINDOW_NAME = "Auction Sniper";
 	public static final String STATUS_JOINING = "Joining";
 	public static final String SNIPER_STATUS_NAME = "sniper status";
@@ -43,19 +46,12 @@ public class Main {
 	
 	private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException{
 		disconnectWhenUICloses(connection);
-		final Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), 
-				new MessageListener() {
-			public void processMessage(Chat aChat, Message message){
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						ui.showStatus(MainWindow.STATUS_LOST);
-					}
-				});
-			}
-		});
-		this.notToBeGCd = chat;
+		final Chat chat = connection.getChatManager().createChat(
+				auctionId(itemId, connection), 
+				new AuctionMessageTranslator(this)
+				);
 		chat.sendMessage(JOIN_COMMOND_FORMAT);
+		notToBeGCd = chat;
 	}
 	
 	private void disconnectWhenUICloses(final XMPPConnection connection) {
@@ -110,5 +106,22 @@ public class Main {
 		public void showStatus(String status){
 			sniperStatus.setText(status);
 		}
+	
+	
+	}
+	public void auctionClosed(){
+		SwingUtilities.invokeLater(new Runnable() {
+			
+			@Override
+			public void run() {
+				ui.showStatus(MainWindow.STATUS_LOST);
+			}
+		});
+	}
+
+	@Override
+	public void currentPrice(int i, int j) {
+		// TODO Auto-generated method stub
+		
 	}
 }

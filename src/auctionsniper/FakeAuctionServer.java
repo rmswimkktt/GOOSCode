@@ -75,7 +75,7 @@ public class FakeAuctionServer {
 	
 	//ステップ4
 	public void announceClosed() throws XMPPException{
-		currentChat.sendMessage(new Message());
+		currentChat.sendMessage("SQLVersion: 1.1; Event: X=CLOSE;");
 	}
 	
 	public void stop(){
