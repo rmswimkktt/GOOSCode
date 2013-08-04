@@ -1,6 +1,8 @@
 package auctionsniper.ui;
 
 import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -24,6 +26,8 @@ public class Main {
 	public static final String AUCTION_RESOURCE = "Auction";
 	public static final String ITEM_ID_AS_LOGIN = "auction-%s";
 	public static final String AUCTION_ID_FORMAT = ITEM_ID_AS_LOGIN + "@%s/" + AUCTION_RESOURCE;
+	public static final String JOIN_COMMOND_FORMAT = "Joint commond format";
+	public static final String BID_COMMOND_FORMAT = "Bif commond format @%d";
 	
 	private MainWindow ui;
 	private Chat notToBeGCd;
@@ -38,6 +42,7 @@ public class Main {
 	}
 	
 	private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException{
+		disconnectWhenUICloses(connection);
 		final Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), 
 				new MessageListener() {
 			public void processMessage(Chat aChat, Message message){
@@ -50,9 +55,18 @@ public class Main {
 			}
 		});
 		this.notToBeGCd = chat;
-		chat.sendMessage(new Message());
+		chat.sendMessage(JOIN_COMMOND_FORMAT);
 	}
 	
+	private void disconnectWhenUICloses(final XMPPConnection connection) {
+		ui.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e){
+				connection.disconnect();
+			}
+		});
+	}
+
 	private static XMPPConnection connection(String hostname, String username, String password) throws XMPPException{
 		XMPPConnection connection = new XMPPConnection(hostname);
 		connection.connect();
@@ -75,6 +89,7 @@ public class Main {
 	public static class MainWindow extends JFrame{
 		private final JLabel sniperStatus = createLabel(STATUS_JOINING);
 		public static final String STATUS_LOST = "Lost";
+		public static final String STATUS_BIDDING = "Bidding";
 		
 		public MainWindow(){
 			super("Auction Sniper");
