@@ -21,7 +21,7 @@ import auctionsniper.AuctionMessageTranslator;
 import auctionsniper.AuctionSniper;
 import auctionsniper.SniperListener;
 
-public class Main implements SniperListener {
+public class Main {
 	private static final int ARG_HOSTNAME = 0;
 	private static final int ARG_USERNAME = 1;
 	private static final int ARG_PASSWORD = 2;
@@ -47,27 +47,67 @@ public class Main implements SniperListener {
 		main.joinAuction(connection(args[ARG_HOSTNAME], args[ARG_USERNAME], args[ARG_PASSWORD]), args[ARG_ITEM_ID]);
 	}
 	
-	private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException{
+	private void joinAuction(XMPPConnection connection, String itemId){
 		disconnectWhenUICloses(connection);
 
-		final Chat chat = connection.getChatManager().createChat(
-				auctionId(itemId, connection), 
-				null);
+		final Chat chat = connection.getChatManager().createChat(auctionId(itemId, connection), null);
 		this.notToBeGCd = chat;
 		
-		Auction auction = new Auction(){
-			public void bid(int amount){
-				try{
-					chat.sendMessage(String.format(BID_COMMOND_FORMAT, amount));
-				} catch(XMPPException e){
-					e.printStackTrace();
-				}
-			}
-		};
-		chat.addMessageListener(new AuctionMessageTranslator(new AuctionSniper(auction, this)));
-		chat.sendMessage(JOIN_COMMOND_FORMAT);
+		Auction auction = new XMPPAuction(chat);
+		chat.addMessageListener(new AuctionMessageTranslator(connection.getUser(),
+				new AuctionSniper(auction, new SniperStateDisplayer())));
+		auction.join();
 	}
 	
+	public class SniperStateDisplayer implements SniperListener {
+
+		@Override
+		public void sniperLost() {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void sniperBidding() {
+			showStatus(MainWindow.STATUS_BIDDING);
+		}
+		
+		public void sniperWinnig(){
+			showStatus(MainWindow.STATUS_WINNING);
+		}
+		
+		private void showStatus(final String status){
+			SwingUtilities.invokeLater(new Runnable(){
+				public void run(){ ui.showStatus(status);}
+			});
+		}
+
+	}
+
+	public static class XMPPAuction implements Auction{
+		private final Chat chat;
+		
+		public XMPPAuction(Chat chat){
+			this.chat = chat;
+		}
+		
+		public void bid(int amount){
+			sendMessage(String.format(BID_COMMOND_FORMAT, amount));
+		}
+		
+		public void join(){
+			sendMessage(JOIN_COMMOND_FORMAT);
+		}
+		
+		private void sendMessage(final String message){
+			try{
+				chat.sendMessage(message);
+			} catch(XMPPException e){
+				e.printStackTrace();
+			}
+		}
+	}
+			
 	private void disconnectWhenUICloses(final XMPPConnection connection) {
 		ui.addWindowListener(new WindowAdapter() {
 			@Override
@@ -97,6 +137,7 @@ public class Main implements SniperListener {
 	}
 	
 	public static class MainWindow extends JFrame{
+		public static final String STATUS_WINNING = "Winnig";
 		private final JLabel sniperStatus = createLabel(STATUS_JOINING);
 		public static final String STATUS_LOST = "Lost";
 		public static final String STATUS_BIDDING = "Bidding";
@@ -124,7 +165,6 @@ public class Main implements SniperListener {
 	
 	}
 
-	@Override
 	public void sniperLost() {
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
@@ -134,7 +174,6 @@ public class Main implements SniperListener {
 		
 	}
 
-	@Override
 	public void sniperBidding() {
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
