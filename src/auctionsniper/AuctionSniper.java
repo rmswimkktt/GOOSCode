@@ -1,21 +1,21 @@
 package auctionsniper;
 
-import javax.swing.SwingUtilities;
-
-import auctionsniper.ui.Main.MainWindow;
 
 public class AuctionSniper implements AuctionEventListener {
 	private final SniperListener sniperListener;
+	private final Auction auction;
 
-	public AuctionSniper(SniperListener sniperListener) {
+	public AuctionSniper(Auction auction, SniperListener sniperListener) {
+		this.auction = auction;
 		this.sniperListener = sniperListener;
 	}
-	
+
 	public void auctionClosed(){
 		sniperListener.sniperLost();
 	}
 
 	public void currentPrice(int price, int increment){
-		//TODO
+		auction.bid(price + increment);
+		sniperListener.sniperBidding();
 	}
 }

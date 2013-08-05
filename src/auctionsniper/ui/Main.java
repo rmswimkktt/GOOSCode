@@ -15,6 +15,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
+import auctionsniper.Auction;
 import auctionsniper.AuctionEventListener;
 import auctionsniper.AuctionMessageTranslator;
 import auctionsniper.AuctionSniper;
@@ -48,10 +49,22 @@ public class Main implements SniperListener {
 	
 	private void joinAuction(XMPPConnection connection, String itemId) throws XMPPException{
 		disconnectWhenUICloses(connection);
+
 		final Chat chat = connection.getChatManager().createChat(
 				auctionId(itemId, connection), 
-				new AuctionMessageTranslator(new AuctionSniper(this)));
+				null);
 		this.notToBeGCd = chat;
+		
+		Auction auction = new Auction(){
+			public void bid(int amount){
+				try{
+					chat.sendMessage(String.format(BID_COMMOND_FORMAT, amount));
+				} catch(XMPPException e){
+					e.printStackTrace();
+				}
+			}
+		};
+		chat.addMessageListener(new AuctionMessageTranslator(new AuctionSniper(auction, this)));
 		chat.sendMessage(JOIN_COMMOND_FORMAT);
 	}
 	
@@ -119,5 +132,14 @@ public class Main implements SniperListener {
 			}
 		});
 		
+	}
+
+	@Override
+	public void sniperBidding() {
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run(){
+				ui.showStatus(MainWindow.STATUS_BIDDING);
+			}
+		});
 	}
 }
