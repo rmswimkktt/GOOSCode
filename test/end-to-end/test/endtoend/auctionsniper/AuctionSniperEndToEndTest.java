@@ -29,11 +29,11 @@ public class AuctionSniperEndToEndTest {
 	@Test
 	public void sniperJoinsAuctionUntilAuctionCloses() throws Exception{
 		
-		auction.startSellingItem();							//ステップ1
-		application.startBiddingIn(auction);				//ステップ2
+		auction.startSellingItem();														//ステップ1
+		application.startBiddingIn(auction);											//ステップ2
 		auction.hasReceivedJoinRequestFromSniper(ApplicationRunner.SNIPER_XMPP_ID);		//ステップ3
-		auction.announceClosed();							//ステップ4
-		application.showsSniperHasLostAuction();			//ステップ5
+		auction.announceClosed();														//ステップ4
+		application.showsSniperHasLostAuction();										//ステップ5
 	}
 	
 	//追加のクリーンアップ

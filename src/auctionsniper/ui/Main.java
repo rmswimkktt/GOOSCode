@@ -17,15 +17,17 @@ import org.jivesoftware.smack.packet.Message;
 
 import auctionsniper.AuctionEventListener;
 import auctionsniper.AuctionMessageTranslator;
+import auctionsniper.AuctionSniper;
+import auctionsniper.SniperListener;
 
-public class Main implements AuctionEventListener{
-	public static final String MAIN_WINDOW_NAME = "Auction Sniper";
-	public static final String STATUS_JOINING = "Joining";
-	public static final String SNIPER_STATUS_NAME = "sniper status";
+public class Main implements SniperListener {
 	private static final int ARG_HOSTNAME = 0;
 	private static final int ARG_USERNAME = 1;
 	private static final int ARG_PASSWORD = 2;
 	private static final int ARG_ITEM_ID = 3;
+	public static final String MAIN_WINDOW_NAME = "Auction Sniper";
+	public static final String STATUS_JOINING = "Joining";
+	public static final String SNIPER_STATUS_NAME = "sniper status";
 	public static final String AUCTION_RESOURCE = "Auction";
 	public static final String ITEM_ID_AS_LOGIN = "auction-%s";
 	public static final String AUCTION_ID_FORMAT = ITEM_ID_AS_LOGIN + "@%s/" + AUCTION_RESOURCE;
@@ -48,10 +50,9 @@ public class Main implements AuctionEventListener{
 		disconnectWhenUICloses(connection);
 		final Chat chat = connection.getChatManager().createChat(
 				auctionId(itemId, connection), 
-				new AuctionMessageTranslator(this)
-				);
+				new AuctionMessageTranslator(new AuctionSniper(this)));
+		this.notToBeGCd = chat;
 		chat.sendMessage(JOIN_COMMOND_FORMAT);
-		notToBeGCd = chat;
 	}
 	
 	private void disconnectWhenUICloses(final XMPPConnection connection) {
@@ -109,19 +110,14 @@ public class Main implements AuctionEventListener{
 	
 	
 	}
-	public void auctionClosed(){
-		SwingUtilities.invokeLater(new Runnable() {
-			
-			@Override
-			public void run() {
+
+	@Override
+	public void sniperLost() {
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run(){
 				ui.showStatus(MainWindow.STATUS_LOST);
 			}
 		});
-	}
-
-	@Override
-	public void currentPrice(int i, int j) {
-		// TODO Auto-generated method stub
 		
 	}
 }
