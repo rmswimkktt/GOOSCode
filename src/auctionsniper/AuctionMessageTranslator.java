@@ -54,13 +54,4 @@ public class AuctionMessageTranslator implements MessageListener {
 		}
 		
 	}
-	private HashMap<String, String> unpackEventForm(Message message){
-		HashMap<String, String> event = new HashMap<String, String>();
-		for(String element : message.getBody().split(";")){
-			String[] pair = element.split(":");
-			event.put(pair[0].trim(), pair[1].trim());
-		}
-		return event;
-	}
-
 }
