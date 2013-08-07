@@ -54,7 +54,7 @@ public class Main {
 		this.notToBeGCd = chat;
 		
 		Auction auction = new XMPPAuction(chat);
-		chat.addMessageListener(new AuctionMessageTranslator(new AuctionSniper(auction, new SniperStateDisplayer())));
+		chat.addMessageListener(new AuctionMessageTranslator(connection.getUser(), new AuctionSniper(auction, new SniperStateDisplayer())));
 		auction.join();
 	}
 	
@@ -70,7 +70,7 @@ public class Main {
 			showStatus(MainWindow.STATUS_BIDDING);
 		}
 		
-		public void sniperWinnig(){
+		public void sniperWinning(){
 			showStatus(MainWindow.STATUS_WINNING);
 		}
 		
@@ -135,10 +135,11 @@ public class Main {
 	}
 	
 	public static class MainWindow extends JFrame{
-		public static final String STATUS_WINNING = "Winnig";
+		public static final String STATUS_WINNING = "Winning";
 		private final JLabel sniperStatus = createLabel(STATUS_JOINING);
 		public static final String STATUS_LOST = "Lost";
 		public static final String STATUS_BIDDING = "Bidding";
+		public static final String STATUS_WON_AUCTION = "Won Auction";
 		
 		public MainWindow(){
 			super("Auction Sniper");
