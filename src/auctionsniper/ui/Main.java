@@ -80,6 +80,12 @@ public class Main {
 			});
 		}
 
+		@Override
+		public void sniperWon() {
+			showStatus(MainWindow.STATUS_WON);
+			
+		}
+
 	}
 
 	public static class XMPPAuction implements Auction{
@@ -135,11 +141,12 @@ public class Main {
 	}
 	
 	public static class MainWindow extends JFrame{
+		public static final String STATUS_WON = "Won";
 		public static final String STATUS_WINNING = "Winning";
 		private final JLabel sniperStatus = createLabel(STATUS_JOINING);
 		public static final String STATUS_LOST = "Lost";
 		public static final String STATUS_BIDDING = "Bidding";
-		public static final String STATUS_WON_AUCTION = "Won Auction";
+		public static final String STATUS_WON_AUCTION = "Won";
 		
 		public MainWindow(){
 			super("Auction Sniper");
